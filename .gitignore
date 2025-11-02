@@ -61,6 +61,14 @@ spark-warehouse/
 metastore_db/
 derby.log
 
+# Airflow
+airflow.cfg
+airflow.db
+airflow-webserver.pid
+logs/
+airflow_home/
+standalone_admin_password.txt
+
 # IDE
 .idea/
 .vscode/
