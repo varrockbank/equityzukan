@@ -79,6 +79,9 @@ standalone_admin_password.txt
 # Jupyter Notebook
 .ipynb_checkpoints/
 
+# Docker
+.docker/
+
 # OS
 .DS_Store
 Thumbs.db

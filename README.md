@@ -19,7 +19,47 @@ Out of scope:
 1. tick-by-tick market data
 2. Web UI, except for debugging purposes
 
-# Setup
+
+# Docker (Recommended)
+
+## Prerequisites
+- Docker
+- Docker Compose
+
+## Quick Start
+
+```bash
+docker compose up -d
+```
+
+This starts:
+- PostgreSQL (Airflow metadata database)
+- Airflow Webserver (port 8080)
+- Airflow Scheduler
+
+Access the UI at http://localhost:8080 (login: admin/admin)
+
+## Stop Services
+
+```bash
+docker compose down
+```
+
+To also remove volumes:
+```bash
+docker compose down -v
+```
+
+## Rebuild After Changes
+
+```bash
+docker compose build
+docker compose up -d
+```
+
+# Native Setup (not recommended)
+
+It is recommended you run with Docker-compose.
 
 ## Prerequisites
 - Python 3.11+
