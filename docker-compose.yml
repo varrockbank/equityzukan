@@ -7,12 +7,13 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
-    JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+    JAVA_HOME: /usr/lib/jvm/default-java
   volumes:
     - ./dags:/opt/airflow/dags
     - ./plugins:/opt/airflow/plugins
     - ./src:/opt/airflow/src
     - ./config:/opt/airflow/config
+    - ./data:/opt/airflow/data
     - airflow-logs:/opt/airflow/logs
   depends_on: &airflow-common-depends-on
     postgres:

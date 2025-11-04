@@ -61,6 +61,10 @@ spark-warehouse/
 metastore_db/
 derby.log
 
+# Data (keep .gitkeep)
+data/*
+!data/.gitkeep
+
 # Airflow
 airflow.cfg
 airflow.db
