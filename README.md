@@ -105,6 +105,23 @@ Access the UI at http://localhost:8080 (login: admin/admin)
 python src/app.py
 ```
 
+# Testing
+
+Run all tests:
+```bash
+pytest -v
+```
+
+Run specific test file:
+```bash
+pytest tests/test_build_date_table.py -v
+```
+
+Run with coverage:
+```bash
+pytest --cov=src --cov-report=term-missing
+```
+
 # About the name
 
 In Japanese, the Pokedex is called Pokemon Zukan, Zukan being encyclipedia. This project is like a Pokedex but for equities.
