@@ -3,7 +3,7 @@ from datetime import timedelta
 
 import pandas_market_calendars as mcal
 from pyspark.sql import SparkSession
-from pyspark.sql.types import BooleanType, IntegerType, StructField, StructType
+from pyspark.sql.types import BooleanType, IntegerType, StringType, StructField, StructType
 
 from config.settings import END_DATE, START_DATE
 
@@ -15,13 +15,17 @@ def get_nasdaq_trading_days(start_date, end_date):
     return set(schedule.index.date)
 
 
+DAYS_OF_WEEK = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+
+
 def generate_date_records(start_date, end_date, trading_days):
-    """Generate date records with nasdaq_open flag."""
+    """Generate date records with nasdaq_open flag and day of week."""
     current = start_date
     while current <= end_date:
         date_key = int(current.strftime("%Y%m%d"))
         nasdaq_open = current in trading_days
-        yield (date_key, nasdaq_open)
+        day_of_week = DAYS_OF_WEEK[current.weekday()]
+        yield (date_key, day_of_week, nasdaq_open)
         current += timedelta(days=1)
 
 
@@ -32,6 +36,7 @@ def build_date_table(spark: SparkSession):
 
     schema = StructType([
         StructField("date_key", IntegerType(), nullable=False),
+        StructField("day_of_week", StringType(), nullable=False),
         StructField("nasdaq_open", BooleanType(), nullable=False),
     ])
 

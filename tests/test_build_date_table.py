@@ -46,27 +46,38 @@ class TestGenerateDateRecords:
     """Tests for generate_date_records function."""
 
     def test_generates_correct_date_range(self):
-        start = date(2024, 1, 1)
-        end = date(2024, 1, 5)
+        start = date(2024, 1, 1)  # Monday
+        end = date(2024, 1, 5)    # Friday
         trading_days = {date(2024, 1, 2), date(2024, 1, 3)}
 
         records = list(generate_date_records(start, end, trading_days))
 
         assert len(records) == 5
-        assert records[0] == (20240101, False)
-        assert records[1] == (20240102, True)
-        assert records[2] == (20240103, True)
-        assert records[3] == (20240104, False)
-        assert records[4] == (20240105, False)
+        assert records[0] == (20240101, "monday", False)
+        assert records[1] == (20240102, "tuesday", True)
+        assert records[2] == (20240103, "wednesday", True)
+        assert records[3] == (20240104, "thursday", False)
+        assert records[4] == (20240105, "friday", False)
 
     def test_date_key_format(self):
-        start = date(2024, 12, 31)
+        start = date(2024, 12, 31)  # Tuesday
         end = date(2024, 12, 31)
         trading_days = set()
 
         records = list(generate_date_records(start, end, trading_days))
 
         assert records[0][0] == 20241231
+        assert records[0][1] == "tuesday"
+
+    def test_day_of_week_values(self):
+        start = date(2024, 1, 1)   # Monday
+        end = date(2024, 1, 7)     # Sunday
+        trading_days = set()
+
+        records = list(generate_date_records(start, end, trading_days))
+        days = [r[1] for r in records]
+
+        assert days == ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
 
 class TestBuildDateTable:
@@ -76,8 +87,10 @@ class TestBuildDateTable:
         df = build_date_table(spark)
 
         assert "date_key" in df.columns
+        assert "day_of_week" in df.columns
         assert "nasdaq_open" in df.columns
         assert df.schema["date_key"].dataType.simpleString() == "int"
+        assert df.schema["day_of_week"].dataType.simpleString() == "string"
         assert df.schema["nasdaq_open"].dataType.simpleString() == "boolean"
 
     def test_dataframe_has_rows(self, spark):
