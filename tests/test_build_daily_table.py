@@ -20,6 +20,7 @@ class TestFetchDailyPrices:
                 "High": [155.0, 156.0],
                 "Low": [149.0, 150.0],
                 "Close": [154.0, 155.0],
+                "Volume": [1000000, 1100000],
             },
             index=pd.to_datetime(["2024-01-02", "2024-01-03"]),
         )
@@ -37,6 +38,7 @@ class TestFetchDailyPrices:
                 "High": [155.0],
                 "Low": [149.0],
                 "Close": [154.0],
+                "Volume": [1000000],
             },
             index=pd.to_datetime(["2024-01-02"]),
         )
@@ -45,7 +47,7 @@ class TestFetchDailyPrices:
         records = fetch_daily_prices(["AAPL"], date(2024, 1, 1), date(2024, 1, 5))
 
         assert len(records) == 1
-        ticker, exchange, date_key, open_price, high, low, close = records[0]
+        ticker, exchange, date_key, open_price, high, low, close, volume = records[0]
         assert ticker == "AAPL"
         assert exchange == "NASDAQ"
         assert date_key == 20240102
@@ -53,6 +55,7 @@ class TestFetchDailyPrices:
         assert high == 155.0
         assert low == 149.0
         assert close == 154.0
+        assert volume == 1000000
 
     @patch("src.jobs.build_daily_table.yf.Ticker")
     def test_handles_multiple_tickers(self, mock_ticker):
@@ -62,6 +65,7 @@ class TestFetchDailyPrices:
                 "High": [105.0],
                 "Low": [99.0],
                 "Close": [104.0],
+                "Volume": [500000],
             },
             index=pd.to_datetime(["2024-01-02"]),
         )

@@ -4,6 +4,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import (
     DoubleType,
     IntegerType,
+    LongType,
     StringType,
     StructField,
     StructType,
@@ -31,6 +32,7 @@ def fetch_daily_prices(tickers: list[str], start_date, end_date):
                 float(row["High"]),
                 float(row["Low"]),
                 float(row["Close"]),
+                int(row["Volume"]),
             ))
 
     return records
@@ -53,6 +55,7 @@ def build_daily_table(spark: SparkSession, tickers_path: str):
         StructField("stock_high", DoubleType(), nullable=False),
         StructField("stock_low", DoubleType(), nullable=False),
         StructField("stock_close", DoubleType(), nullable=False),
+        StructField("volume", LongType(), nullable=False),
     ])
 
     return spark.createDataFrame(records, schema)
