@@ -26,7 +26,7 @@ def fetch_daily_prices(tickers: list[str], start_date, end_date):
             date_key = int(date.strftime("%Y%m%d"))
             records.append((
                 ticker,
-                "NASDAQ",
+                "yahoo_finance",
                 date_key,
                 float(row["Open"]),
                 float(row["High"]),
@@ -49,7 +49,7 @@ def build_daily_table(spark: SparkSession, tickers_path: str):
 
     schema = StructType([
         StructField("ticker", StringType(), nullable=False),
-        StructField("exchange", StringType(), nullable=False),
+        StructField("source", StringType(), nullable=False),
         StructField("date_key", IntegerType(), nullable=False),
         StructField("stock_open", DoubleType(), nullable=False),
         StructField("stock_high", DoubleType(), nullable=False),
