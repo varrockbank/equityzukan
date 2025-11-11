@@ -92,6 +92,12 @@ def fetch_shares_outstanding(cik: str, ticker: str) -> list[tuple]:
         print(f"Warning: No quarterly shares data found for {ticker}")
         return []
 
+    start_key = int(START_DATE.strftime("%Y%m%d"))
+    end_key = int(END_DATE.strftime("%Y%m%d"))
+
+    # Track the latest filing before START_DATE to anchor early dates
+    latest_before_start = None  # (date_key, shares, filed_key)
+
     for entry in shares_data:
         # Include both 10-Q and 10-K filings
         if entry.get("form") not in ("10-Q", "10-K"):
@@ -110,19 +116,27 @@ def fetch_shares_outstanding(cik: str, ticker: str) -> list[tuple]:
         except ValueError:
             continue
 
-        # Filter by date range
-        start_key = int(START_DATE.strftime("%Y%m%d"))
-        end_key = int(END_DATE.strftime("%Y%m%d"))
-        if not (start_key <= date_key <= end_key):
-            continue
-
         shares = entry.get("val")
         if shares is None:
             continue
 
-        # Keep the record with the latest filing date for each period end date
-        if date_key not in records_by_period or filed_key > records_by_period[date_key][1]:
-            records_by_period[date_key] = (int(shares), filed_key)
+        # Check if this is within our date range
+        if start_key <= date_key <= end_key:
+            # Keep the record with the latest filing date for each period end date
+            if date_key not in records_by_period or filed_key > records_by_period[date_key][1]:
+                records_by_period[date_key] = (int(shares), filed_key)
+        elif date_key < start_key:
+            # Track the latest filing before START_DATE to anchor early dates
+            if latest_before_start is None or date_key > latest_before_start[0]:
+                latest_before_start = (date_key, int(shares), filed_key)
+            elif date_key == latest_before_start[0] and filed_key > latest_before_start[2]:
+                # Same period, but later filing - update
+                latest_before_start = (date_key, int(shares), filed_key)
+
+    # Include the pre-start anchor if found
+    if latest_before_start:
+        date_key, shares, _ = latest_before_start
+        records_by_period[date_key] = (shares, 0)
 
     # Convert to list of tuples
     return [
