@@ -107,6 +107,20 @@ python src/app.py
 
 # Testing
 
+## Docker (Recommended)
+
+Run all tests:
+```bash
+docker compose run --rm airflow-webserver python -m pytest -v
+```
+
+Run specific test file:
+```bash
+docker compose run --rm airflow-webserver python -m pytest tests/test_build_date_table.py -v
+```
+
+## Native
+
 Run all tests:
 ```bash
 pytest -v
