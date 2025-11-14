@@ -113,6 +113,7 @@ class TestBuildEquityTableExtended:
             assert result[0].ticker == "GME"
             assert result[0].edgar_shares_outstanding is None
             assert result[0].edgar_10q_date_key is None
+            assert result[0].market_cap is None
 
     def test_preserves_all_daily_columns(self, spark):
         """Test that all daily table columns are preserved."""
@@ -168,6 +169,9 @@ class TestBuildEquityTableExtended:
             assert result.edgar_shares_outstanding == 25000000000
             assert result.edgar_10q_date_key == 20231231
             assert result.edgar_cik == "0001045810"
+
+            # Verify market_cap = stock_close * shares_outstanding
+            assert result.market_cap == 505.0 * 25000000000
 
     def test_multiple_tickers(self, spark):
         """Test that multiple tickers are joined correctly."""

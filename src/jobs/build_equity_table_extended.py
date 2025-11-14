@@ -53,7 +53,7 @@ def build_equity_table_extended(
     ranked_df = joined_df.withColumn("rank", F.row_number().over(window))
     latest_df = ranked_df.filter(F.col("rank") == 1).drop("rank", "edgar_ticker")
 
-    # Rename columns for clarity
+    # Rename columns for clarity and compute market_cap
     result_df = latest_df.select(
         daily_df.ticker,
         daily_df.source,
@@ -64,6 +64,7 @@ def build_equity_table_extended(
         daily_df.stock_close,
         daily_df.volume,
         F.col("shares_outstanding").alias("edgar_shares_outstanding"),
+        (daily_df.stock_close * F.col("shares_outstanding")).alias("market_cap"),
         F.col("edgar_date_key").alias("edgar_10q_date_key"),  # FK to edgar_10q
         F.col("cik").alias("edgar_cik"),
     )
