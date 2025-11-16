@@ -39,6 +39,8 @@ This starts:
 
 Access the UI at http://localhost:8080 (login: admin/admin)
 
+Note: New or modified DAGs may take ~30 seconds to appear in the UI as the scheduler periodically scans the `dags/` folder.
+
 ## Stop Services
 
 ```bash
