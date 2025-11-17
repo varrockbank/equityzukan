@@ -100,6 +100,41 @@ def run_build_equity_table_extended(**context):
         spark.stop()
 
 
+def run_build_currency_pairs_table(**context):
+    """Execute the currency_pairs table build job."""
+    from pyspark.sql import SparkSession
+
+    from src.jobs.build_currency_pairs_table import build_currency_pairs_table
+
+    spark = SparkSession.builder.appName("BuildCurrencyPairsTable").getOrCreate()
+
+    try:
+        df = build_currency_pairs_table(spark, "/opt/airflow/data/currency_pairs.csv")
+        df.write.mode("overwrite").parquet("/opt/airflow/data/currency_pairs_table")
+        print(f"Built currency_pairs table with {df.count()} rows")
+    finally:
+        spark.stop()
+
+
+def run_build_daily_currency_table(**context):
+    """Execute the daily_currency table build job."""
+    from pyspark.sql import SparkSession
+
+    from src.jobs.build_daily_currency_table import build_daily_currency_table
+
+    spark = SparkSession.builder.appName("BuildDailyCurrencyTable").getOrCreate()
+
+    try:
+        df = build_daily_currency_table(
+            spark,
+            "/opt/airflow/data/currency_pairs_table",
+        )
+        df.write.mode("overwrite").parquet("/opt/airflow/data/daily_currency_table")
+        print(f"Built daily_currency table with {df.count()} rows")
+    finally:
+        spark.stop()
+
+
 with DAG(
     dag_id="build_all_tables",
     default_args=default_args,
@@ -140,24 +175,39 @@ with DAG(
         python_callable=run_build_equity_table_extended,
     )
 
-    # Final node - depends on date_table and equity_table_extended
+    # Currency pairs (independent)
+    build_currency_pairs = PythonOperator(
+        task_id="build_currency_pairs_table",
+        python_callable=run_build_currency_pairs_table,
+    )
+
+    # Daily currency (depends on currency_pairs)
+    build_daily_currency = PythonOperator(
+        task_id="build_daily_currency_table",
+        python_callable=run_build_daily_currency_table,
+    )
+
+    # Final node - depends on all tables
     all_tables_complete = EmptyOperator(
         task_id="all_tables_complete",
     )
 
     # Dependency graph:
     #
-    # build_date_table ───────────────────────────────────┐
-    #                                                     │
-    # build_asset_table ──┬─────────────────────────┐     │
-    #                     │                         │     │
-    #                     ▼                         ▼     ├──► all_tables_complete
-    #             build_daily_table      build_edgar_10q  │
-    #                     │                         │     │
-    #                     └────────────┬────────────┘     │
-    #                                  ▼                  │
-    #                       build_equity_extended ────────┘
+    # build_date_table ─────────────────────────────────────────┐
+    #                                                           │
+    # build_asset_table ──┬─────────────────────────┐           │
+    #                     │                         │           │
+    #                     ▼                         ▼           ├──► all_tables_complete
+    #             build_daily_table      build_edgar_10q        │
+    #                     │                         │           │
+    #                     └────────────┬────────────┘           │
+    #                                  ▼                        │
+    #                       build_equity_extended ──────────────┤
+    #                                                           │
+    # build_currency_pairs ──► build_daily_currency ────────────┘
     #
     build_asset >> [build_daily, build_edgar_10q]
     [build_daily, build_edgar_10q] >> build_equity_extended
-    [build_date, build_equity_extended] >> all_tables_complete
+    build_currency_pairs >> build_daily_currency
+    [build_date, build_equity_extended, build_daily_currency] >> all_tables_complete
