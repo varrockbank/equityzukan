@@ -1,7 +1,15 @@
-This project is a data warehouse centered on day-level equity data.
+This project is a data warehouse centered on day-level equity data 
+produced by a batch-processed Spark ELT pipeline collating various data sources. 
+
+Current integrations:
+- currency data from Yahoo Finance (will swap out later)
+- OLHC data from Yahoo Finance
+- shares outstanding from EDGAR 
+
+# Requirements
 
 Tech Stack (Subject to change):
-- DB Engine: Columnar Postgres SQL DB
+- DB: Parquet (Later Postgres )
 - ELT (extract-load-transform) big data pipeline: PySpark (Python-based Apache Spark)
 - Workflow Orchestration: Apache Airflow
 
@@ -11,37 +19,28 @@ Scope will/may expand along various axis:
 3. Cryptocurrencies and other assets
 4. European and Asia tickers
 5. Historical timespan and trailing number of years of data
+6. Currency Conversions 
+7. Technical Indicators
 
-We should be sufficiently busy striving for trailing-10-years of day-level data for Nasdaq and NYSE.
-Various complexities will crop up including handling stock-splits, delistings, new listings 
+We should be sufficiently busy striving for trailing-10-years of day-level data for Nasdaq and NYSE. Various complexities will crop up including handling stock-splits, delistings, new listings 
 
 Out of scope:
 1. tick-by-tick market data
-2. Web UI, except for debugging purposes
-
+2. Web UI. Use tool of choice to validate Parquet files. 
 
 # Docker (Recommended)
-
-## Prerequisites
-- Docker
-- Docker Compose
-
-## Quick Start
 
 ```bash
 docker compose up -d
 ```
-
-This starts:
+Starts
 - PostgreSQL (Airflow metadata database)
-- Airflow Webserver (port 8080)
+- Airflow UI at http://localhost:8080 (login: admin/admin)
 - Airflow Scheduler
-
-Access the UI at http://localhost:8080 (login: admin/admin)
 
 Note: New or modified DAGs may take ~30 seconds to appear in the UI as the scheduler periodically scans the `dags/` folder.
 
-## Stop Services
+Stop:
 
 ```bash
 docker compose down
@@ -52,8 +51,7 @@ To also remove volumes:
 docker compose down -v
 ```
 
-## Rebuild After Changes
-
+Rebuild After Changes:
 ```bash
 docker compose build
 docker compose up -d
